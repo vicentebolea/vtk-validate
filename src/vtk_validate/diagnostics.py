@@ -1,6 +1,5 @@
 """Pydantic models for validation errors and reports."""
 
-import time
 from enum import Enum
 from typing import Optional
 

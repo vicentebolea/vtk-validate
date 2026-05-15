@@ -32,9 +32,7 @@ def check_imports(tree: ast.AST, index: "VTKAPIIndex") -> list[Diagnostic]:
         elif isinstance(node, ast.ImportFrom):
             if node.module and "vtk" in node.module.lower():
                 for alias in node.names:
-                    diag = _check_from_import(
-                        node.module, alias.name, node.lineno, index
-                    )
+                    diag = _check_from_import(node.module, alias.name, node.lineno, index)
                     if diag:
                         diagnostics.append(diag)
 
@@ -48,18 +46,13 @@ def _check_plain_import(module: str, lineno: int) -> Diagnostic | None:
         return Diagnostic(
             type=ErrorType.UNKNOWN_MODULE,
             line=lineno,
-            message=(
-                f"Direct import of '{module}' is not allowed. "
-                f"Use 'from {module} import ClassName' instead."
-            ),
+            message=(f"Direct import of '{module}' is not allowed. Use 'from {module} import ClassName' instead."),
             suggestion=f"from {module} import <ClassName>",
         )
     return None
 
 
-def _check_from_import(
-    module: str, name: str, lineno: int, index: "VTKAPIIndex"
-) -> Diagnostic | None:
+def _check_from_import(module: str, name: str, lineno: int, index: "VTKAPIIndex") -> Diagnostic | None:
     if module in ("vtkmodules.all",):
         return None
 
@@ -80,9 +73,7 @@ def _check_from_import(
         return Diagnostic(
             type=ErrorType.UNKNOWN_MODULE,
             line=lineno,
-            message=(
-                f"'{name}' is in '{record.module_name}', not '{module}'."
-            ),
+            message=(f"'{name}' is in '{record.module_name}', not '{module}'."),
             class_name=name,
             suggestion=suggestion,
         )

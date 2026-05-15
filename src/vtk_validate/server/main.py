@@ -5,8 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastmcp import FastMCP
-
 from vtk_knowledge import VTKAPIIndex
+
 from vtk_validate import tools as T
 
 mcp = FastMCP("vtk-validate")
@@ -31,69 +31,86 @@ def init_server(jsonl_path: Path) -> None:
 def vtk_get_class_info(class_name: str) -> dict:
     return T.vtk_get_class_info(class_name, _get_index())
 
+
 @mcp.tool()
 def vtk_search_classes(query: str, limit: int = 10) -> list:
     return T.vtk_search_classes(query, _get_index(), limit=limit)
+
 
 @mcp.tool()
 def vtk_get_method_info(class_name: str, method_name: str) -> dict:
     return T.vtk_get_method_info(class_name, method_name, _get_index())
 
+
 @mcp.tool()
 def vtk_get_class_role(class_name: str) -> str:
     return T.vtk_get_class_role(class_name, _get_index())
+
 
 @mcp.tool()
 def vtk_get_class_input_datatype(class_name: str) -> str:
     return T.vtk_get_class_input_datatype(class_name, _get_index())
 
+
 @mcp.tool()
 def vtk_get_class_output_datatype(class_name: str) -> str:
     return T.vtk_get_class_output_datatype(class_name, _get_index())
+
 
 @mcp.tool()
 def vtk_get_class_semantic_methods(class_name: str) -> list:
     return T.vtk_get_class_semantic_methods(class_name, _get_index())
 
+
 @mcp.tool()
 def vtk_get_class_doc(class_name: str) -> str:
     return T.vtk_get_class_doc(class_name, _get_index())
+
 
 @mcp.tool()
 def vtk_validate_import(import_statement: str) -> dict:
     return T.vtk_validate_import(import_statement, _get_index())
 
+
 @mcp.tool()
 def vtk_is_a_class(class_name: str) -> bool:
     return T.vtk_is_a_class(class_name, _get_index())
+
 
 @mcp.tool()
 def vtk_get_class_module(class_name: str) -> str:
     return T.vtk_get_class_module(class_name, _get_index())
 
+
 @mcp.tool()
 def vtk_get_class_methods(class_name: str) -> list:
     return T.vtk_get_class_methods(class_name, _get_index())
+
 
 @mcp.tool()
 def vtk_get_module_classes(module: str) -> list:
     return T.vtk_get_module_classes(module, _get_index())
 
+
 @mcp.tool()
 def vtk_get_method_doc(class_name: str, method_name: str) -> str:
     return T.vtk_get_method_doc(class_name, method_name, _get_index())
+
 
 @mcp.tool()
 def vtk_get_method_signature(class_name: str, method_name: str) -> str:
     return T.vtk_get_method_signature(class_name, method_name, _get_index())
 
+
 @mcp.tool()
 def vtk_get_class_synopsis(class_name: str) -> str:
     return T.vtk_get_class_synopsis(class_name, _get_index())
 
+
 @mcp.tool()
 def vtk_get_class_action_phrase(class_name: str) -> str:
     return T.vtk_get_class_action_phrase(class_name, _get_index())
+
 
 @mcp.tool()
 def vtk_get_class_visibility(class_name: str) -> float | None:
@@ -101,7 +118,10 @@ def vtk_get_class_visibility(class_name: str) -> float | None:
 
 
 def main() -> None:
-    import argparse, os
+    import argparse
+    import os
+    import sys
+
     parser = argparse.ArgumentParser(description="vtk-validate MCP server")
     parser.add_argument(
         "--knowledge-artifact",
@@ -119,13 +139,22 @@ def main() -> None:
     if not args.knowledge_artifact:
         parser.error("--knowledge-artifact is required (or set VTK_KNOWLEDGE_PATH)")
 
-    init_server(Path(args.knowledge_artifact))
+    try:
+        init_server(Path(args.knowledge_artifact))
+    except Exception as exc:
+        print(f"Error: failed to load knowledge artifact: {exc}", file=sys.stderr)
+        sys.exit(1)
 
-    if args.transport == "http":
-        import asyncio
-        asyncio.run(mcp.run_http_async(host="127.0.0.1", port=args.port))
-    else:
-        mcp.run()
+    try:
+        if args.transport == "http":
+            import asyncio
+
+            asyncio.run(mcp.run_http_async(host="127.0.0.1", port=args.port))
+        else:
+            mcp.run()
+    except Exception as exc:
+        print(f"Error: server failed: {exc}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

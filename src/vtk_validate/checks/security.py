@@ -10,10 +10,19 @@ from ..diagnostics import Diagnostic, ErrorType
 if TYPE_CHECKING:
     from vtk_knowledge import VTKAPIIndex
 
-_FORBIDDEN_MODULES = frozenset({
-    "os", "subprocess", "sys", "socket", "urllib", "requests", "http",
-    "ftplib", "smtplib",
-})
+_FORBIDDEN_MODULES = frozenset(
+    {
+        "os",
+        "subprocess",
+        "sys",
+        "socket",
+        "urllib",
+        "requests",
+        "http",
+        "ftplib",
+        "smtplib",
+    }
+)
 
 _FORBIDDEN_BUILTINS = frozenset({"eval", "exec", "__import__", "compile"})
 
@@ -24,11 +33,7 @@ def check_security(tree: ast.AST, index: "VTKAPIIndex") -> list[Diagnostic]:
 
     for node in ast.walk(tree):
         if isinstance(node, (ast.Import, ast.ImportFrom)):
-            module = (
-                node.names[0].name
-                if isinstance(node, ast.Import)
-                else (node.module or "")
-            )
+            module = node.names[0].name if isinstance(node, ast.Import) else (node.module or "")
             root = module.split(".")[0]
             if root in _FORBIDDEN_MODULES:
                 diagnostics.append(

@@ -21,10 +21,7 @@ def vtk_get_class_info(class_name: str, index: "VTKAPIIndex") -> dict[str, Any]:
 
 def vtk_search_classes(query: str, index: "VTKAPIIndex", limit: int = 10) -> list[dict[str, Any]]:
     results = index.search_classes(query, limit=limit)
-    return [
-        {"class_name": r.class_name, "module_name": r.module_name, "synopsis": r.synopsis or ""}
-        for r in results
-    ]
+    return [{"class_name": r.class_name, "module_name": r.module_name, "synopsis": r.synopsis or ""} for r in results]
 
 
 def vtk_get_method_info(class_name: str, method_name: str, index: "VTKAPIIndex") -> dict[str, Any]:
@@ -56,6 +53,7 @@ def vtk_get_class_doc(class_name: str, index: "VTKAPIIndex") -> str:
 
 def vtk_validate_import(import_statement: str, index: "VTKAPIIndex") -> dict[str, Any]:
     from .api import validate
+
     report = validate(import_statement, index)
     return {
         "valid": report.status == "ok",

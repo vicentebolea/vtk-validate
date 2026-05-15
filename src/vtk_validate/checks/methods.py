@@ -43,9 +43,7 @@ def check_methods(tree: ast.AST, index: "VTKAPIIndex") -> list[Diagnostic]:
                 type=ErrorType.MISSING_METHOD,
                 line=getattr(node, "lineno", 0),
                 column=getattr(node, "col_offset", 0),
-                message=(
-                    f"Method '{method_name}()' not found on '{class_name}'."
-                ),
+                message=(f"Method '{method_name}()' not found on '{class_name}'."),
                 class_name=class_name,
                 method_name=method_name,
                 suggestion=suggestion,

@@ -28,6 +28,7 @@ def analyze(source: str, index: "VTKAPIIndex") -> list[Diagnostic]:
         tree = ast.parse(source)
     except SyntaxError as exc:
         from .diagnostics import ErrorType
+
         return [
             Diagnostic(
                 type=ErrorType.MISSING_CLASS,
