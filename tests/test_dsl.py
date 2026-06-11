@@ -5,11 +5,9 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from helpers import make_mock_index, make_mock_record
 
 from vtk_validate.dsl import DSL_GRAMMAR, class_to_slug, is_dsl, method_to_param
-
 
 # ── grammar utilities ───────────────────────────────────────────────────────
 
@@ -134,7 +132,7 @@ class TestTranslateToDsl:
         mock_litellm.completion.return_value = mock_response
 
         with patch.dict("sys.modules", {"litellm": mock_litellm}):
-            result = translate_to_dsl("make a simple plane", idx, model="test-model")
+            translate_to_dsl("make a simple plane", idx, model="test-model")
 
         mock_litellm.completion.assert_called_once()
         call_kwargs = mock_litellm.completion.call_args
