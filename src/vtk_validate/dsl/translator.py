@@ -48,11 +48,7 @@ def _build_class_context(query: str, api_index: "VTKAPIIndex", limit: int = 8) -
         slug = class_to_slug(class_name)
         role = record.role.value if record.role else "unknown"
         synopsis = record.synopsis or hit.get("synopsis", "")
-        params = [
-            method_to_param(m)
-            for m in (record.semantic_methods or [])
-            if m.startswith("Set")
-        ][:12]
+        params = [method_to_param(m) for m in (record.semantic_methods or []) if m.startswith("Set")][:12]
         lines.append(f"- {slug} ({class_name}) [role: {role}] — {synopsis}")
         if params:
             lines.append(f"  params: {', '.join(params)}")
@@ -89,8 +85,7 @@ def translate_to_dsl(
         import litellm
     except ImportError as e:
         raise ImportError(
-            "litellm is required for DSL translation. "
-            "Install with: pip install vtk-validate[translate]"
+            "litellm is required for DSL translation. Install with: pip install vtk-validate[translate]"
         ) from e
 
     class_context = _build_class_context(query, api_index)

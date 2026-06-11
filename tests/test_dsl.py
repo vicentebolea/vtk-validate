@@ -90,8 +90,7 @@ class TestIsDsl:
 class TestTranslateToDsl:
     def _make_rich_index(self):
         """Return a mock index with realistic records for plane + elevation."""
-        idx = make_mock_index({"vtkPlaneSource": "vtkFiltersSources",
-                               "vtkElevationFilter": "vtkFiltersCore"})
+        idx = make_mock_index({"vtkPlaneSource": "vtkFiltersSources", "vtkElevationFilter": "vtkFiltersCore"})
 
         plane = make_mock_record("vtkPlaneSource", "vtkFiltersSources")
         plane.role = MagicMock()
@@ -124,9 +123,7 @@ class TestTranslateToDsl:
 
         idx = self._make_rich_index()
         mock_response = MagicMock()
-        mock_response.choices[0].message.content = (
-            "create plane_source called src with x_resolution 10"
-        )
+        mock_response.choices[0].message.content = "create plane_source called src with x_resolution 10"
 
         mock_litellm = MagicMock()
         mock_litellm.completion.return_value = mock_response
@@ -145,9 +142,7 @@ class TestTranslateToDsl:
 
         idx = self._make_rich_index()
         mock_response = MagicMock()
-        mock_response.choices[0].message.content = (
-            "create plane_source called src with x_resolution 10"
-        )
+        mock_response.choices[0].message.content = "create plane_source called src with x_resolution 10"
         mock_litellm = MagicMock()
         mock_litellm.completion.return_value = mock_response
 
