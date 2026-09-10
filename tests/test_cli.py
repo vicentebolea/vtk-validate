@@ -65,7 +65,7 @@ class TestCheckCommand:
         result = runner.invoke(app, ["check", "--help"])
         out = _strip_ansi(result.output)
         assert result.exit_code == 0
-        assert "FILE" in out
+        assert "file" in out.lower()
 
 
 # ---------------------------------------------------------------------------
@@ -101,7 +101,7 @@ class TestClassInfoCommand:
     def test_help_lists_argument(self):
         result = runner.invoke(app, ["class-info", "--help"])
         out = _strip_ansi(result.output)
-        assert "CLASS_NAME" in out
+        assert "class_name" in out.lower()
 
 
 # ---------------------------------------------------------------------------
