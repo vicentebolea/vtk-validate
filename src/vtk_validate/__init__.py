@@ -4,7 +4,7 @@ __version__ = "1.0.0"
 
 from .api import validate
 from .diagnostics import Diagnostic, ErrorType, ValidationReport
-from .dsl import DSL_GRAMMAR, class_to_slug, is_dsl, method_to_param, translate_to_dsl
+from .dsl import DSL_GRAMMAR, build_dsl_translation_context, class_to_slug, is_dsl, method_to_param
 
 __all__ = [
     "validate",
@@ -12,8 +12,8 @@ __all__ = [
     "ErrorType",
     "ValidationReport",
     "DSL_GRAMMAR",
+    "build_dsl_translation_context",
     "class_to_slug",
     "is_dsl",
     "method_to_param",
-    "translate_to_dsl",
 ]
