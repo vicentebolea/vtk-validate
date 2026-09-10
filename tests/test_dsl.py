@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-import pytest
 from helpers import make_mock_index, make_mock_record
 
 from vtk_validate.dsl import DSL_GRAMMAR, class_to_slug, is_dsl, method_to_param
@@ -87,7 +86,7 @@ class TestIsDsl:
 # ── translator (no LLM) ─────────────────────────────────────────────────────
 
 
-class TestTranslateToDsl:
+class TestBuildDslTranslationContext:
     def _make_rich_index(self):
         """Return a mock index with realistic records for plane + elevation."""
         idx = make_mock_index({"vtkPlaneSource": "vtkFiltersSources", "vtkElevationFilter": "vtkFiltersCore"})
@@ -110,72 +109,39 @@ class TestTranslateToDsl:
         idx.get_class.side_effect = _get_class
         return idx
 
-    def test_missing_litellm_raises_import_error(self):
-        from vtk_validate.dsl.translator import translate_to_dsl
+    def test_includes_grammar(self):
+        from vtk_validate.dsl.translator import build_dsl_translation_context
 
         idx = make_mock_index({})
-        with patch.dict("sys.modules", {"litellm": None}):
-            with pytest.raises(ImportError, match="litellm"):
-                translate_to_dsl("make a plane", idx)
-
-    def test_calls_litellm_with_query(self):
-        from vtk_validate.dsl.translator import translate_to_dsl
-
-        idx = self._make_rich_index()
-        mock_response = MagicMock()
-        mock_response.choices[0].message.content = "create plane_source called src with x_resolution 10"
-
-        mock_litellm = MagicMock()
-        mock_litellm.completion.return_value = mock_response
-
-        with patch.dict("sys.modules", {"litellm": mock_litellm}):
-            translate_to_dsl("make a simple plane", idx, model="test-model")
-
-        mock_litellm.completion.assert_called_once()
-        call_kwargs = mock_litellm.completion.call_args
-        assert call_kwargs.kwargs["model"] == "test-model"
-        messages = call_kwargs.kwargs["messages"]
-        assert any("make a simple plane" in m["content"] for m in messages)
-
-    def test_returns_dsl_string(self):
-        from vtk_validate.dsl.translator import translate_to_dsl
-
-        idx = self._make_rich_index()
-        mock_response = MagicMock()
-        mock_response.choices[0].message.content = "create plane_source called src with x_resolution 10"
-        mock_litellm = MagicMock()
-        mock_litellm.completion.return_value = mock_response
-
-        with patch.dict("sys.modules", {"litellm": mock_litellm}):
-            result = translate_to_dsl("make a plane", idx)
+        result = build_dsl_translation_context("make a plane", idx)
 
         assert "plane_source" in result
+        assert "SYNTAX" in result
 
-    def test_class_context_included_in_prompt(self):
-        """Relevant class slugs and params appear in the user message."""
-        from vtk_validate.dsl.translator import translate_to_dsl
-
-        idx = self._make_rich_index()
-        mock_response = MagicMock()
-        mock_response.choices[0].message.content = "create plane_source called src"
-        mock_litellm = MagicMock()
-        mock_litellm.completion.return_value = mock_response
-
-        with patch.dict("sys.modules", {"litellm": mock_litellm}):
-            translate_to_dsl("make a plane", idx)
-
-        messages = mock_litellm.completion.call_args.kwargs["messages"]
-        user_content = next(m["content"] for m in messages if m["role"] == "user")
-        assert "plane_source" in user_content
-        assert "x_resolution" in user_content
-
-    def test_litellm_failure_raises_runtime_error(self):
-        from vtk_validate.dsl.translator import translate_to_dsl
+    def test_includes_query(self):
+        from vtk_validate.dsl.translator import build_dsl_translation_context
 
         idx = make_mock_index({})
-        mock_litellm = MagicMock()
-        mock_litellm.completion.side_effect = Exception("network error")
+        result = build_dsl_translation_context("make a simple plane", idx)
 
-        with patch.dict("sys.modules", {"litellm": mock_litellm}):
-            with pytest.raises(RuntimeError, match="DSL translation failed"):
-                translate_to_dsl("make a sphere", idx)
+        assert "make a simple plane" in result
+
+    def test_class_context_included(self):
+        """Relevant class slugs and params appear in the returned context."""
+        from vtk_validate.dsl.translator import build_dsl_translation_context
+
+        idx = self._make_rich_index()
+        result = build_dsl_translation_context("make a plane", idx)
+
+        assert "plane_source" in result
+        assert "x_resolution" in result
+
+    def test_no_llm_call(self):
+        """No network/module dependency is required — pure string assembly."""
+        from vtk_validate.dsl.translator import build_dsl_translation_context
+
+        idx = make_mock_index({})
+        result = build_dsl_translation_context("make a sphere", idx)
+
+        assert isinstance(result, str)
+        assert len(result) > 0
